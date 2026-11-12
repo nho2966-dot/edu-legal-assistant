@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة المساعد الذكي للأنظمة واللوائح التعليمية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #1b365d;
+            --primary-light: #2c5282;
+            --bg: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger-bg: #fff5f5;
+            --danger-border: #c53030;
+            --danger-text: #9b2c2c;
+            --warning-bg: #fffaf0;
+            --warning-border: #dd6b20;
+            --warning-text: #9c4221;
+            --success-bg: #f0fdf4;
+            --success-border: #16a34a;
+            --success-text: #166534;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.65; }
+        .auth-topbar { background-color: #0f172a; color: #f8fafc; padding: 0.65rem 1.5rem; border-bottom: 1px solid #334155; font-size: 0.86rem; }
+        .auth-container { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.85rem; }
+        .user-status { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+        .role-pill { padding: 0.2rem 0.7rem; border-radius: 999px; font-weight: 700; font-size: 0.78rem; background: #1e293b; border: 1px solid #475569; color: #38bdf8; }
+        .quick-auth-switcher { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .role-switch-btn { background: #1e293b; color: #cbd5e1; border: 1px solid #475569; padding: 0.3rem 0.68rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+        .role-switch-btn:hover { background: #334155; color: #ffffff; }
+        .role-switch-btn.active-role { background: #0284c7; color: #ffffff; border-color: #38bdf8; }
+        header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #ffffff; padding: 1.35rem 1.5rem; box-shadow: 0 4px 12px rgba(27, 54, 93, 0.15); }
+        .header-container { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+        .brand-title h1 { font-size: 1.38rem; margin-bottom: 0.2rem; }
+        .brand-title p { font-size: 0.86rem; opacity: 0.92; }
+        .governing-badge { background: rgba(255, 255, 255, 0.14); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.45rem 0.95rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; }
+        .nav-tabs { max-width: 1280px; margin: 1.15rem auto 0; padding: 0 1.5rem; display: flex; gap: 0.65rem; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+        .tab-btn { background: none; border: none; padding: 0.72rem 1.25rem; font-size: 0.94rem; font-weight: 700; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 0.45rem; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background-color: #ffffff; border-radius: 8px 8px 0 0; }
+        .tab-btn.locked-tab { opacity: 0.55; cursor: not-allowed; }
+        .lock-tag { font-size: 0.7rem; padding: 0.1rem 0.42rem; border-radius: 4px; background: #fee2e2; color: #991b1b; font-weight: 700; }
+        main { max-width: 1280px; margin: 1.35rem auto 3rem; padding: 0 1.5rem; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1.35fr; gap: 1.4rem; }
+        @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04); margin-bottom: 1.2rem; }
+        .card-title { font-size: 1.06rem; font-weight: 700; color: var(--primary); margin-bottom: 0.95rem; padding-bottom: 0.5rem; border-bottom: 2px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+        .form-group { margin-bottom: 0.9rem; }
+        label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 0.35rem; }
+        input[type="text"], input[type="date"], input[type="file"], select, textarea { width: 100%; padding: 0.65rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.92rem; background: #ffffff; color: var(--text-main); }
+        textarea { resize: vertical; min-height: 92px; }
+        .file-dropzone { border: 2px dashed #94a3b8; background: #f8fafc; border-radius: 10px; padding: 1rem; text-align: center; margin-bottom: 1rem; }
+        .btn-primary { background-color: var(--primary); color: #ffffff; border: none; padding: 0.72rem 1.2rem; border-radius: 8px; font-size: 0.92rem; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn-primary:hover { background-color: var(--primary-light); }
+        .btn-sm { padding: 0.32rem 0.68rem; font-size: 0.78rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; color: #ffffff; }
+        .preset-group { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.65rem; }
+        .preset-btn { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--primary); padding: 0.38rem 0.7rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .section-block { padding: 0.95rem; border-radius: 8px; background: #f8fafc; border-right: 4px solid var(--primary); margin-bottom: 0.9rem; }
+        .section-block h4 { color: var(--primary); font-size: 0.92rem; margin-bottom: 0.35rem; }
+        .citation-box { background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; margin-top: 0.55rem; }
+        .meta-tags { display: flex; flex-wrap: wrap; gap: 0.38rem; margin-top: 0.45rem; }
+        .badge { display: inline-block; padding: 0.18rem 0.58rem; border-radius: 999px; font-size: 0.76rem; font-weight: 700; }
+        .badge-blue { background: #e0f2fe; color: #0369a1; }
+        .badge-green { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+        .badge-amber { background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-border); }
+        .badge-red { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+        .alert-escalation { background: var(--warning-bg); border-right: 5px solid var(--warning-border); color: var(--warning-text); padding: 0.9rem; border-radius: 8px; font-weight: 600; }
+        .alert-refusal { background: var(--danger-bg); border-right: 5px solid var(--danger-border); color: var(--danger-text); padding: 0.9rem; border-radius: 8px; font-weight: 600; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.95rem; margin-bottom: 1.3rem; }
+        .kpi-card { background: #ffffff; border: 1px solid var(--border); border-right: 4px solid var(--primary); border-radius: 10px; padding: 1rem; }
+        .kpi-value { font-size: 1.55rem; font-weight: 800; color: var(--primary); }
+        .kpi-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        th, td { padding: 0.62rem 0.7rem; border-bottom: 1px solid var(--border); text-align: right; }
+        th { background: var(--primary); color: #ffffff; font-weight: 700; }
+        tr:nth-child(even) { background: #f8fafc; }
+    </style>
+</head>
+<body>
+
+<div class="auth-topbar">
+    <div class="auth-container">
+        <div class="user-status">
+            <span>الحساب النشط: <strong id="currentUserName">المستشار القانوني المختص</strong></span>
+            <span class="role-pill" id="currentUserRolePill">مختص_قانوني</span>
+        </div>
+        <div class="quick-auth-switcher">
+            <span>تبديل الدور (RBAC):</span>
+            <button class="role-switch-btn active-role" data-user="legal_admin" onclick="AppController.switchRole('legal_admin')">مختص قانوني</button>
+            <button class="role-switch-btn" data-user="edu_supervisor" onclick="AppController.switchRole('edu_supervisor')">مشرف تربوي</button>
+            <button class="role-switch-btn" data-user="parent_user" onclick="AppController.switchRole('parent_user')">ولي أمر (استعلام فقط)</button>
+            <button class="role-switch-btn" style="background:#0f766e; color:#fff;" onclick="AppController.exportKnowledgeBase()">تصدير قاعدة المعرفة JSON</button>
+        </div>
+    </div>
+</div>
+
+<header>
+    <div class="header-container">
+        <div class="brand-title">
+            <h1>بوابة المساعد الذكي للأنظمة واللوائح التعليمية</h1>
+            <p>استخراج مباشر لملفات PDF و Word في المتصفح + تقطيع آلي للمواد + تحقق ثنائي وحفظ محلي مستديم</p>
+        </div>
+        <div class="governing-badge">
+            المبدأ الحاكم: لا إجابة بلا مصدر موثّق، وأي غموض يُحال فوراً إلى مختص بشري
+        </div>
+    </div>
+</header>
+
+<nav class="nav-tabs">
+    <button class="tab-btn active" id="tabBtnQuery" onclick="AppController.openTab('tab-query', this)">
+        <span>1. الاستعلام الذكي الموثق</span>
+        <span class="badge badge-green">متاح للجميع</span>
+    </button>
+    <button class="tab-btn" id="tabBtnIngest" onclick="AppController.openProtectedTab('tab-ingest', this, 'ingest_documents')">
+        <span>2. رفع ملفات PDF / Word وفحص الميتاداتا</span>
+        <span id="lockBadgeIngest" class="lock-tag" style="display:none;">مقيد</span>
+    </button>
+    <button class="tab-btn" id="tabBtnGovernance" onclick="AppController.openProtectedTab('tab-governance', this, 'view_governance')">
+        <span>3. الحوكمة وسجل التدقيق</span>
+        <span id="lockBadgeGov" class="lock-tag" style="display:none;">مقيد</span>
+    </button>
+</nav>
+
+<main>
+    <div id="rbacAlert" class="alert-refusal" style="display:none; margin-bottom:1.1rem;"></div>
+
+    <section id="tab-query" class="tab-panel active">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">
+                    <span>نموذج الاستفسار النظامي</span>
+                    <span class="badge badge-blue" id="indexedCountBadge">المواد المفهرسة: 0</span>
+                </div>
+                <div class="form-group">
+                    <label for="queryInput">نص الاستفسار في اللوائح والأنظمة التعليمية:</label>
+                    <textarea id="queryInput" placeholder="اكتب سؤالك هنا..."></textarea>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="includeRepealed">
+                    <label for="includeRepealed" style="margin:0;">تضمين النصوص الملغاة (لمقارنة النص السابق)</label>
+                </div>
+                <button class="btn-primary" onclick="AppController.handleQuery()">استرجاع الحكم النظامي الموثق</button>
+                <div style="margin-top: 1.1rem;">
+                    <label>سيناريوهات اختبار فورية:</label>
+                    <div class="preset-group">
+                        <button class="preset-btn" onclick="AppController.runPreset('ما هي مهلة تقديم عذر غياب الطالب وشروط قبوله؟', false)">1. سؤال إجرائي مباشر</button>
+                        <button class="preset-btn" onclick="AppController.runPreset('ابني الطالب غاب الأسبوع الماضي وتم رفض عذره، فما القرار في حالتي؟ رقم الهوية 1092837465', false)">2. حالة فردية + حجب هوية</button>
+                        <button class="preset-btn" onclick="AppController.runPreset('ما هي مهلة تقديم عذر غياب الطالب في النص السابق؟', true)">3. مقارنة نص سابق ملغى</button>
+                        <button class="preset-btn" onclick="AppController.runPreset('ما هي شروط الابتعاث الخارجي لدراسة الطب؟', false)">4. خارج النطاق (رفض صارم)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>بنية الإجابة النظامية الموحدة</span>
+                    <span class="badge badge-green">Dual-Check مفعل</span>
+                </div>
+                <div class="section-block">
+                    <h4>1. الخلاصة المباشرة</h4>
+                    <p id="ansSummary">—</p>
+                </div>
+                <div class="section-block">
+                    <h4>2. التفصيل والاستشهاد النظامي الدقيق</h4>
+                    <div id="ansDetails">—</div>
+                </div>
+                <div class="section-block">
+                    <h4>3. مستوى الثقة والكيانات الإجرائية</h4>
+                    <p id="ansConfidence">—</p>
+                    <div id="ansEntities" class="meta-tags"></div>
+                </div>
+                <div class="section-block">
+                    <h4>4. التنبيه الختامي / التوصية بالمختصين</h4>
+                    <div id="ansClosing">—</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tab-ingest" class="tab-panel">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">
+                    <span>رفع ملف (PDF / Word / TXT) أو إدخال نص وثيقة</span>
+                    <span class="badge badge-amber">تقطيع آلي للمواد + SHA-256</span>
+                </div>
+                <div class="file-dropzone">
+                    <label for="docFileInput" style="color:var(--primary); font-size:0.95rem;">
+                        اختر ملف لائحة أو تعميم (PDF أو Word .docx أو TXT) لاستخراج نصوصه وتقطيع مواده آلياً:
+                    </label>
+                    <input type="file" id="docFileInput" accept=".pdf,.docx,.txt" onchange="AppController.handleFileSelection(event)" style="margin-top:0.45rem;">
+                    <div id="fileExtractStatus" style="font-size:0.82rem; color:var(--text-muted); margin-top:0.4rem;">
+                        يعمل مباشرة داخل المتصفح على استضافة GitHub Pages.
+                    </div>
+                </div>
+                <div class="form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                    <div>
+                        <label>معرّف الوثيقة (source_id):</label>
+                        <input type="text" id="ingSourceId" value="REG-EDU-2026-10">
+                    </div>
+                    <div>
+                        <label>الرمز النظامي (system_code):</label>
+                        <input type="text" id="ingSysCode" value="INC-EDU">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>عنوان الوثيقة النظامية:</label>
+                    <input type="text" id="ingTitle" value="الدليل الإجرائي لتنظيم صفوف الدمج والتربية الخاصة">
+                </div>
+                <div class="form-group">
+                    <label>الجهة المُصدرة (issuing_authority) — إلزامي للفهرسة:</label>
+                    <input type="text" id="ingAuthority" value="وزارة التعليم - المديرية العامة للتربية الخاصة">
+                </div>
+                <div class="form-group" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.5rem;">
+                    <div>
+                        <label>نوع الوثيقة:</label>
+                        <select id="ingDocType">
+                            <option value="دليل إجرائي">دليل إجرائي</option>
+                            <option value="لائحة تنفيذية">لائحة تنفيذية</option>
+                            <option value="نظام">نظام</option>
+                            <option value="قرار وزاري">قرار وزاري</option>
+                            <option value="تعميم">تعميم</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>الحالة:</label>
+                        <select id="ingStatus">
+                            <option value="نافذ">نافذ</option>
+                            <option value="قيد المراجعة">قيد المراجعة</option>
+                            <option value="ملغى">ملغى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>تاريخ النفاذ (إلزامي):</label>
+                        <input type="date" id="ingEffDate" value="2026-03-01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>النص المستخرج من الملف (أو النص المدخل يدوياً):</label>
+                    <textarea id="ingRawText" rows="5">الباب الثاني: ضوابط القبول والتسجيل
+الفصل الأول: التقييم التربوي
+المادة (8): يشترط لإلحاق الطالب في صفوف الدمج إجراء تقييم تربوي شامل خلال 10 أيام عمل من تاريخ التسجيل، وتعتمد الإجراءات من لجنة التربية الخاصة بإدارة التعليم.
+المادة (9): يرفع طلب التظلم من نتيجة التقييم خلال 5 أيام عمل إلى المديرية العامة للتربية الخاصة.</textarea>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn-primary" onclick="AppController.ingestDocument(false)">فحص الميتاداتا وتقطيع المواد وفهرستها</button>
+                    <button class="btn-primary" style="background:#9b2c2c;" onclick="AppController.ingestDocument(true)">اختبار وثيقة بلا تاريخ نفاذ (تحويل للمراجعة)</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>نتيجة الفحص والتقطيع القانوني والبصمة الرقمية (SHA-256)</span>
+                </div>
+                <div id="ingestResultBox">
+                    <p style="color:var(--text-muted);">اختر ملف PDF أو Word أو اضغط على زر الفهرسة لمعاينة التقطيع الآلي للمواد وحساب بصمة المحتوى SHA-256.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tab-governance" class="tab-panel">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-value">100%</div>
+                <div class="kpi-label">نسبة الاستشهاد للإجابات الإجرائية</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpiTotalQueries">0</div>
+                <div class="kpi-label">إجمالي الاستعلامات المسجلة</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpiEscalationRate">0%</div>
+                <div class="kpi-label">نسبة التصعيد للمختص البشري</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpiReviewQueue">0</div>
+                <div class="kpi-label">وثائق معلقة للمراجعة البشرية</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>قائمة الوثائق الموقوفة للمراجعة البشرية</span>
+                <span class="badge badge-blue">صلاحية الاعتماد: المختص القانوني فقط</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المعرّف</th>
+                            <th>العنوان</th>
+                            <th>النوع</th>
+                            <th>سبب الإيقاف</th>
+                            <th>بصمة SHA-256</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewQueueBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>سجل التدقيق والاستدعاء (Audit Log) — مع حجب البيانات الشخصية تلقائياً</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الوقت</th>
+                            <th>المستخدم</th>
+                            <th>الاستعلام (بعد حجب PII)</th>
+                            <th>المقاطع المسترجعة</th>
+                            <th>مستوى الثقة</th>
+                            <th>حالة التصعيد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+class ArabicLegalProcessor {
+    static clean(text) {
+        return text
+            .replace(/[\u0617-\u061A\u064B-\u0652]/g, "")
+            .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    static normalize(text) {
+        return this.clean(text).replace(/[أإآ]/g, "ا").replace(/ة\b/g, "ه").replace(/ى\b/g, "ي");
+    }
+    static tokenize(text) {
+        return this.normalize(text).split(/[^\w\u0600-\u06FF]+/).filter(tok => tok.length > 1);
+    }
+    static extractEntities(cleanText) {
+        const patterns = {
+            "المهل_الزمنية": /(خلال\s+\d+\s*(?:يوم|أيام|يوماً|شهر|أشهر|ساعة|ساعات|أسبوع|أسابيع)|في\s+موعد\s+أقصاه\s+[^،.]+)/g,
+            "الشروط": /(يشترط\s+[^،.]+|بشرط\s+[^،.]+|يلزم\s+[^،.]+)/g,
+            "العقوبات_والجزاءات": /(يعاقب\s+[^،.]+|تطبق\s+عقوبة\s+[^،.]+|يحرم\s+من\s+[^،.]+|إنذار\s+[^،.]+|فصل\s+[^،.]+)/g,
+            "الإجراءات_المطلوبة": /(يرفع\s+طلب\s+[^،.]+|يتقدم\s+بـ?[^،.]+|تعتمد\s+الإجراءات\s+[^،.]+)/g,
+            "الجهة_المسؤولة": /(وزارة\s+[^،.]+|إدارة\s+التعليم\s*[^،.]*|لجنة\s+[^،.]+|مدير\s+المدرسة|المديرية\s+العامة\s+[^،.]+)/g
+        };
+        const extracted = {};
+        let isProcedural = false;
+        for (const [key, regex] of Object.entries(patterns)) {
+            const matches = cleanText.match(regex);
+            if (matches && matches.length > 0) {
+                extracted[key] = [...new Set(matches)];
+                if (key !== "الجهة_المسؤولة") isProcedural = true;
+            }
+        }
+        return { extracted, isProcedural };
+    }
+    static parseDocumentIntoChunks(meta, rawText) {
+        const chapterMatch = rawText.match(/(الباب\s+[^\n:]+[:\-]?\s*[^\n]*)/);
+        const sectionMatch = rawText.match(/(الفصل\s+[^\n:]+[:\-]?\s*[^\n]*)/);
+        const chapterTitle = chapterMatch ? this.clean(chapterMatch[1]) : "الباب العام";
+        const sectionTitle = sectionMatch ? this.clean(sectionMatch[1]) : "الأحكام التنظيمية";
+        const articleRegex = /(?:^|\n)\s*(?:المادة|مادة)\s*\(?(\d+)\)?\s*[:\-]?/g;
+        const matches = [...rawText.matchAll(articleRegex)];
+        const chunks = [];
+        if (matches.length > 0) {
+            for (let i = 0; i < matches.length; i++) {
+                const artNum = matches[i][1];
+                const startIdx = matches[i].index + matches[i][0].length;
+                const endIdx = (i + 1 < matches.length) ? matches[i + 1].index : rawText.length;
+                const body = this.clean(rawText.slice(startIdx, endIdx));
+                if (body.length >= 10) {
+                    chunks.push(this.createChunkObject(meta, chapterTitle, sectionTitle, artNum, body));
+                }
+            }
+        } else {
+            const cleanedBody = this.clean(rawText);
+            if (cleanedBody) {
+                chunks.push(this.createChunkObject(meta, chapterTitle, sectionTitle, "1", cleanedBody));
+            }
+        }
+        return chunks;
+    }
+    static createChunkObject(meta, chapter, section, articleNum, cleanText) {
+        const { extracted, isProcedural } = this.extractEntities(cleanText);
+        return {
+            chunk_code: `${meta.system_code}-مادة${articleNum}-v1`,
+            source_id: meta.source_id,
+            document_title: meta.document_title,
+            issuing_authority: meta.issuing_authority,
+            document_type: meta.document_type,
+            effective_date: meta.effective_date,
+            status: meta.status,
+            article_number: String(articleNum),
+            hierarchy_path: `${chapter} > ${section} > المادة (${articleNum})`,
+            clean_text: cleanText,
+            is_procedural: isProcedural,
+            extracted_entities: extracted
+        };
+    }
+    static async computeSHA256(text) {
+        if (window.crypto && window.crypto.subtle) {
+            const msgBuffer = new TextEncoder().encode(text);
+            const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+        let h = 0;
+        for (let i = 0; i < text.length; i++) h = Math.imul(31, h) + text.charCodeAt(i) | 0;
+        return Math.abs(h).toString(16).padStart(16, "0");
+    }
+}
+
+class BrowserFileExtractor {
+    static async extractText(file) {
+        const name = file.name.toLowerCase();
+        if (name.endsWith(".txt")) return await file.text();
+        if (name.endsWith(".docx")) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await window.mammoth.extractRawText({ arrayBuffer });
+            return result.value;
+        }
+        if (name.endsWith(".pdf")) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const content = await page.getTextContent();
+                fullText += content.items.map(item => item.str).join(" ") + "\n";
+            }
+            return fullText;
+        }
+        throw new Error("يرجى رفع ملف PDF أو Word (.docx) أو TXT.");
+    }
+}
+
+const AppController = {
+    storageKey: "edu_legal_kb_v3_state",
+    roles: {
+        legal_admin: {
+            username: "legal_admin",
+            full_name: "المستشار القانوني المختص",
+            role: "مختص_قانوني",
+            permissions: ["ask_query", "view_repealed", "ingest_documents", "view_governance", "approve_human_review"]
+        },
+        edu_supervisor: {
+            username: "edu_supervisor",
+            full_name: "المشرف الإداري والتربوي",
+            role: "مشرف_تربوي",
+            permissions: ["ask_query", "view_repealed", "ingest_documents", "view_governance"]
+        },
+        parent_user: {
+            username: "parent_user",
+            full_name: "ولي أمر طالب (مستفيد عام)",
+            role: "ولي_أمر",
+            permissions: ["ask_query"]
+        }
+    },
+    currentUser: null,
+    chunks: [],
+    reviewQueue: [],
+    auditLogs: [],
+
+    init() {
+        this.currentUser = this.roles.legal_admin;
+        const saved = localStorage.getItem(this.storageKey);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                this.chunks = parsed.chunks || [];
+                this.reviewQueue = parsed.reviewQueue || [];
+                this.auditLogs = parsed.auditLogs || [];
+            } catch (_) { this.seedDefaultData(); }
+        } else {
+            this.seedDefaultData();
+        }
+        this.applyRBAC();
+        this.runPreset("ما هي مهلة تقديم عذر غياب الطالب وشروط قبوله؟", false);
+    },
+    saveState() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify({
+                chunks: this.chunks,
+                reviewQueue: this.reviewQueue,
+                auditLogs: this.auditLogs
+            }));
+        } catch (_) {}
+    },
+    seedDefaultData() {
+        this.chunks = [
+            {
+                chunk_code: "STD-BYLAW-مادة15-فقرةأ-v2",
+                source_id: "REG-EDU-2025-01",
+                document_title: "اللائحة التنفيذية لشؤون الطلبة والانضباط المدرسي",
+                issuing_authority: "وزارة التعليم - المديرية العامة لتطوير اللوائح والأنظمة",
+                document_type: "لائحة تنفيذية",
+                effective_date: "2025-09-01",
+                status: "نافذ",
+                article_number: "15",
+                hierarchy_path: "الباب الثالث: المواظبة والانضباط > الفصل الثاني: الأعذار والتظلمات > المادة (15)",
+                clean_text: "يشترط لقبول عذر غياب الطالب تقديم تقرير طبي معتمد خلال 5 أيام عمل من تاريخ الانقطاع، ويرفع طلب التظلم إلى لجنة شؤون الطلبة بإدارة التعليم المختصة.",
+                is_procedural: true,
+                extracted_entities: {
+                    "المهل_الزمنية": ["خلال 5 أيام عمل"],
+                    "الشروط": ["يشترط لقبول عذر غياب الطالب تقديم تقرير طبي معتمد"],
+                    "الإجراءات_المطلوبة": ["يرفع طلب التظلم إلى لجنة شؤون الطلبة"],
+                    "الجهة_المسؤولة": ["لجنة شؤون الطلبة بإدارة التعليم المختصة"]
+                }
+            },
+            {
+                chunk_code: "STD-BYLAW-مادة28-فقرةب-v2",
+                source_id: "REG-EDU-2025-01",
+                document_title: "اللائحة التنفيذية لشؤون الطلبة والانضباط المدرسي",
+                issuing_authority: "وزارة التعليم - المديرية العامة لتطوير اللوائح والأنظمة",
+                document_type: "لائحة تنفيذية",
+                effective_date: "2025-09-01",
+                status: "نافذ",
+                article_number: "28",
+                hierarchy_path: "الباب الرابع: التقويم والاختبارات > الفصل الأول: الاختبارات المؤجلة > المادة (28)",
+                clean_text: "يلزم لقبول دخول الطالب الاختبار البديل تقديم عذر رسمي معتمد في موعد أقصاه 3 أيام من انتهاء فترة الاختبارات، وتعتمد الإجراءات من مدير المدرسة.",
+                is_procedural: true,
+                extracted_entities: {
+                    "المهل_الزمنية": ["في موعد أقصاه 3 أيام"],
+                    "الجهة_المسؤولة": ["مدير المدرسة"]
+                }
+            },
+            {
+                chunk_code: "STD-BYLAW-مادة15-فقرةأ-v1",
+                source_id: "REG-EDU-2019-OLD",
+                document_title: "لائحة شؤون الطلبة السابقة (نسخة ملغاة)",
+                issuing_authority: "وزارة التعليم",
+                document_type: "لائحة تنفيذية",
+                effective_date: "2019-09-01",
+                status: "ملغى",
+                article_number: "15",
+                hierarchy_path: "الباب الثالث: المواظبة > الفصل الثاني: الأعذار > المادة (15)",
+                clean_text: "في النص السابق كان يشترط تقديم عذر غياب الطالب خلال 10 أيام من تاريخ العودة للمدرسة.",
+                is_procedural: true,
+                extracted_entities: { "المهل_الزمنية": ["خلال 10 أيام"] }
+            }
+        ];
+        this.reviewQueue = [
+            {
+                source_id: "CIR-EDU-MISSING-01",
+                document_title: "تعميم تنظيمي بشأن ضوابط النقل المدرسي",
+                document_type: "تعميم",
+                review_reason: "الوثيقة تفتقر إلى تاريخ النفاذ أو جهة الإصدار الموثقة — أحيلت للمراجعة البشرية الإلزامية",
+                content_hash: "a94f21c87e30b14d...",
+                draft_text: "يلزم لتسجيل الطالب في خدمة النقل المدرسي تقديم طلب إلكتروني خلال 7 أيام قبل بدء الفصل الدراسي."
+            }
+        ];
+        this.saveState();
+    },
+    switchRole(roleKey) {
+        if (!this.roles[roleKey]) return;
+        this.currentUser = this.roles[roleKey];
+        this.applyRBAC();
+    },
+    applyRBAC() {
+        document.getElementById("currentUserName").textContent = this.currentUser.full_name;
+        document.getElementById("currentUserRolePill").textContent =
